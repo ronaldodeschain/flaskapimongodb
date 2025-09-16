@@ -9,20 +9,28 @@ main_bp = Blueprint('main_bp',__name__)
 def login():
     try:
         raw_data = request.get_json()
-        LoginPayLoad(**raw_data)
+        user_data = LoginPayLoad(**raw_data)
     except ValidationError as e:
         return jsonify({"error":e.errors()}),400
     except Exception as ex:
         return jsonify({"error":"Error durante a requisição do dado"}),500
-    return jsonify({"message":"Realizar Login"})
+    
+    if user_data.username == 'admin' and user_data.password == '123':
+        return jsonify({"message":"Login bem-sucedido"}),200
+    else:
+        return jsonify({"error":"Credenciais inválidas"}),401
+
+
 #RF: O Sistema deve permitir listagem de todos os produtos
 @main_bp.route('/produtos',methods=['GET'])
 def get_produtos():
     return jsonify({"message":"Esta eh a rota dos produtos"})
+
 #RF: O Sistema deve permitir a criação de um novo produto
 @main_bp.route('/produtos',methods=['POST'])
 def criar_produtos():
     return jsonify({"message":"Esta eh a rota de criação de produtos"})
+
 #RF: O Sistema deve permitir a visualização dos detalhes de um produto
 @main_bp.route('/produtos/<int:id_produto>',methods=['GET'])
 def get_produto_por_id(id_produto):
