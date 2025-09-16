@@ -4,4 +4,4 @@ from typing import Optional
 class Categoria(BaseModel):
     nome:str
     descricao:Optional[str] = None
-    ativo:bool = True
+    

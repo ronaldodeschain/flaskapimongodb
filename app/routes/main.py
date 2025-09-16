@@ -1,5 +1,5 @@
 from flask import Blueprint,jsonify, request 
-from app.models.user import LoginPayLoad
+from app.models.usuario import LoginPayload
 from pydantic import ValidationError
 
 main_bp = Blueprint('main_bp',__name__)
@@ -9,7 +9,7 @@ main_bp = Blueprint('main_bp',__name__)
 def login():
     try:
         raw_data = request.get_json()
-        user_data = LoginPayLoad(**raw_data)
+        user_data = LoginPayload(**raw_data)
     except ValidationError as e:
         return jsonify({"error":e.errors()}),400
     except Exception as ex:
