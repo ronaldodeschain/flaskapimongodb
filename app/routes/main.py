@@ -1,6 +1,9 @@
 from flask import Blueprint,jsonify, request 
 from app.models.usuario import LoginPayload
 from pydantic import ValidationError
+from bson import ObjectId
+
+
 
 main_bp = Blueprint('main_bp',__name__)
 
