@@ -14,7 +14,7 @@ def create_app():
         raise RuntimeError("SECRET_KEY environment variable is not set.")
 
     mongo.init_app(app)
-
+    
     # Import and register blueprints here to avoid circular imports
     from .routes.main import main_bp
     from .routes.categoria_bp import categoria_bp
