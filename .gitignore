@@ -1,18 +1,47 @@
-# Ambientes Virtuais
+# Arquivo de configuração local - NUNCA FAÇA COMMIT DESTE ARQUIVO!
+.env
+
+# Ambientes virtuais
 venv/
 .venv/
 env/
+ENV/
 
-# Arquivo de variáveis de ambiente
-.env
-
-# Cache do Python
+# Arquivos de cache e compilados do Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Arquivos de IDE / Editor
-.vscode/
-.idea/
+# C extensions
+*.so
 
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Logs e relatórios de teste/cobertura
+pip-log.txt
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
