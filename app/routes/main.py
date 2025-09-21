@@ -100,12 +100,55 @@ def get_produto_por_id(id_produto):
         return jsonify({"error": "Product not found"}), 404
 #RF: O Sistema deve permitir a atualização de um unico produto e prod existente
 @main_bp.route('/produtos/<string:id_produto>',methods=['PUT'])
+@token_required
 def update_produto(id_produto):
-    return jsonify({"message":"Esta eh a rota para atualizar o produto pelo id"})
+    try:
+        try:
+            oid = ObjectId(id_produto)
+        except Exception:
+            return jsonify({"error": "Invalid product ID format"}), 400
+
+        update_data_raw = request.get_json()
+        if not update_data_raw:
+            return jsonify({"error": "Request body must be JSON and not empty"}), 400
+        
+        # Valida os dados recebidos com o modelo Pydantic
+        update_data = UpdateProduto(**update_data_raw)
+        # Converte para dict, excluindo campos que não foram enviados no JSON
+        dados_para_atualizar = update_data.model_dump(exclude_unset=True)
+
+        if not dados_para_atualizar:
+            return jsonify({"error": "No update data provided"}), 400
+
+        update_result = mongo.db['produtos'].update_one(
+            {"_id": oid},
+            {"$set": dados_para_atualizar}
+        )
+
+        if update_result.matched_count == 0:
+            return jsonify({"error": "Produto não encontrado"}), 404
+
+        updated_produto = mongo.db['produtos'].find_one({"_id": oid})
+        return dumps(updated_produto), 200, {'Content-Type': 'application/json'}
+    except ValidationError as e:
+        return jsonify({"error": "Invalid input data", "details": e.errors()}), 400
+    except Exception as e:
+        logging.error(f"Unexpected error in update_produto: {e}", exc_info=True)
+        return jsonify({"error": "An unexpected internal error occurred."}), 500
 #RF: O Sistema deve permitir a remoção de um unico produto e produto existente
 @main_bp.route('/produtos/<string:id_produto>',methods=['DELETE'])
 def remove_produto(id_produto):
-    return jsonify({"message":"Esta eh a rota de remoção do produto pelo ID"})
+    try:
+        oid = ObjectId(id_produto)
+    except Exception:
+        return jsonify({"error":"id do produto invalido"}),400
+    
+    delete_produto = mongo.db['produtos'].delete_one({"_id":oid})
+
+    if delete_produto.deleted_count == 0:
+        return jsonify({"error":"Produto não encontrado!"}),404
+    
+    return "",204
 #RF: O Sistema deve permitir a importação de vendas atraves de um arquivo
 @main_bp.route('/vendas/upload',methods=['POST'])
 def upload_vendas():
