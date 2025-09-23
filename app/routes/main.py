@@ -141,6 +141,7 @@ def update_produto(id_produto):
         return jsonify({"error": "An unexpected internal error occurred."}), 500
 #RF: O Sistema deve permitir a remoção de um unico produto e produto existente
 @main_bp.route('/produtos/<string:id_produto>',methods=['DELETE'])
+@token_required
 def remove_produto(id_produto):
     try:
         oid = ObjectId(id_produto)
