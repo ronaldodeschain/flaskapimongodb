@@ -1,6 +1,7 @@
 from flask import Blueprint,jsonify, request,current_app, g
 from app.models.usuario import LoginPayload
 from app.models.produtos import *
+from app.models.venda import *
 from pydantic import ValidationError
 from bson import ObjectId
 from app.database import mongo
@@ -9,6 +10,9 @@ from app.decorators import token_required
 from datetime import datetime, timedelta, timezone
 import jwt
 import logging
+import csv
+import os
+import io
 
 
 
@@ -151,7 +155,39 @@ def remove_produto(id_produto):
     return "",204
 #RF: O Sistema deve permitir a importação de vendas atraves de um arquivo
 @main_bp.route('/vendas/upload',methods=['POST'])
+@token_required
 def upload_vendas():
+    if 'file' not in request.files:
+        return jsonify({'error':'Nenhum arquivo enviado'}),400
+    arquivo = request.files['file']
+    if arquivo.filename == '':
+        return jsonify({'error':'Nenhum arquivo enviado'}),400
+    if arquivo and arquivo.filename.endswith('.csv'):
+        csv_stream = io.StringIO(arquivo.stream.read().decode('utf-8'),newline=None)
+        csv_reader =csv.DictReader(csv_stream)
+
+        vendas_para_inserir = []
+        error = []
+        for row_num,row in enumerate(csv_reader,1):
+            try:
+                venda_data = Venda(**row)
+                vendas_para_inserir.append(venda_data.model_dump())
+            except ValidationError as e:
+                error.append(f'Linha {row_num} com dados inválidos')
+            except Exception as e:
+                error.append(f'Erro ao processar linha {row_num}')
+
+        if vendas_para_inserir:
+            try:
+                mongo.db['vendas'].insert_many(vendas_para_inserir)
+            except Exception as e:
+                return jsonify({'error':f'Erro ao inserir vendas: {str(e)}'}),500
+        return jsonify({
+            'message':'Vendas importadas com sucesso',
+            "vendas importadas":len(vendas_para_inserir),
+            'errors':error
+        }),200
+
     return jsonify({'message':'essa eh a rota de upload de vendas'})
 
 
